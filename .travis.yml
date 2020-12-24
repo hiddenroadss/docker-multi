@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t hiddenroadss/react-tests -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run hiddenroadss/react-tests npm test -- --coverage
+
+after_success:
+  - docker build -t hiddenroadss/multi-client ./client
+  - docker build -t hiddenroadss/multi-ngnix ./nginx
+  - docker build -t hiddenroadss/multi-server ./server
+  - docker build -t hiddenroadss/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push hiddenroadss/multi-client
+  - docker push hiddenroadss/multi-ngnix
+  - docker push hiddenroadss/multi-server
+  - docker push hiddenroadss/multi-worker
+
